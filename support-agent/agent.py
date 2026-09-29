@@ -13,7 +13,7 @@ import os
 import time
 import logging
 from datetime import date
-from typing import List, Dict, Any, Tuple
+from typing import List, Dict, Any, Tuple, Optional
 from pathlib import Path
 from dotenv import load_dotenv
 from groq import Groq
@@ -49,20 +49,41 @@ def get_groq_client() -> Groq:
     return _groq_client
 
 
-# System prompt as specified in hackathon requirements
-AVA_SYSTEM_PROMPT = """You are Ava, a senior support agent.
-Rules:
+# System prompt configured for friendly, conversational customer support messages
+AVA_SYSTEM_PROMPT = """You are Ava, a senior customer support agent.
+Your objective is to help the customer solve their issue quickly in a friendly, conversational chat message format.
+
+CRITICAL RULES:
+- Output ONLY natural chat messages (like in WhatsApp, Zendesk, or Intercom).
+- DO NOT use code blocks, terminal bash scripts, or SQL query boxes (never use ``` code blocks).
+- Explain all troubleshooting steps in simple, plain, friendly English that anyone can follow.
+- Address the current customer by their actual name from CURRENT CUSTOMER.
+- NEVER mix up customers or refer to someone by another customer's name.
 - Use CUSTOMER MEMORY before asking the customer anything.
-- NEVER ask for information they've already given.
-- Reference past tickets naturally ("Last time this was caused by...").
-- Match your tone to the customer's frustration level.
-- Follow the customer's stated format preferences (e.g. short numbered steps if preferred).
-- End every reply with one clear next step.
+- NEVER ask for information they've already given in past tickets or notes.
+- Reference past tickets naturally when relevant ("Last time this was caused by...").
+- Match your tone to the customer's frustration level with patience and reassurance.
+- End every reply with one clear, friendly next step or check-in.
 """
 
 # Models for Groq inference
 PRIMARY_MODEL = "openai/gpt-oss-120b"
 FALLBACK_MODELS = ["qwen/qwen3-32b", "qwen/qwen3.8-27b", "openai/gpt-oss-20b"]
+
+
+def _clean_message_format(text: str) -> str:
+    """
+    Ensures Ava's response is formatted strictly as a friendly customer chat message,
+    converting any raw code fences into clean conversational instructions.
+    """
+    if not text:
+        return ""
+    lines = []
+    for line in text.splitlines():
+        if line.strip().startswith("```"):
+            continue
+        lines.append(line)
+    return "\n".join(lines).strip()
 
 
 def _call_groq_with_fallback(messages: List[Dict[str, str]], temperature: float = 0.3) -> str:
@@ -100,11 +121,17 @@ def _call_groq_with_fallback(messages: List[Dict[str, str]], temperature: float 
     )
 
 
-def reply(customer_id: str, message: str, memory_enabled: bool = True) -> Dict[str, Any]:
+def reply(
+    customer_id: str,
+    message: str,
+    memory_enabled: bool = True,
+    customer_name: Optional[str] = None,
+    customer_role: Optional[str] = None,
+) -> Dict[str, Any]:
     """
     Agent loop (fixed pipeline):
     1. RECALL: query Hindsight with customer message (skip if memory_enabled is False).
-    2. Format prompt with CUSTOMER MEMORY block.
+    2. Format prompt with CURRENT CUSTOMER and CUSTOMER MEMORY block.
     3. GENERATE: call Groq LLM with Ava's system prompt.
     4. RETAIN: record customer message and agent reply into Hindsight memory bank.
     5. Return {"answer": str, "memories_used": List[str]}.
@@ -125,7 +152,12 @@ def reply(customer_id: str, message: str, memory_enabled: bool = True) -> Dict[s
     else:
         memory_block = "(no prior history)"
 
-    user_prompt = f"CUSTOMER MEMORY:\n{memory_block}\n\nCUSTOMER:\n{message}"
+    display_name = customer_name or customer_id.replace("-", " ").title()
+    customer_header = f"CURRENT CUSTOMER: {display_name}"
+    if customer_role:
+        customer_header += f" ({customer_role})"
+
+    user_prompt = f"{customer_header}\n\nCUSTOMER MEMORY:\n{memory_block}\n\nCUSTOMER MESSAGE:\n{message}"
 
     messages = [
         {"role": "system", "content": AVA_SYSTEM_PROMPT},
@@ -133,7 +165,8 @@ def reply(customer_id: str, message: str, memory_enabled: bool = True) -> Dict[s
     ]
 
     # Step 3: GENERATE reply
-    answer = _call_groq_with_fallback(messages, temperature=0.3)
+    raw_answer = _call_groq_with_fallback(messages, temperature=0.3)
+    answer = _clean_message_format(raw_answer)
 
     # Step 4: RETAIN interactions into Hindsight (only when memory is enabled)
     if memory_enabled:

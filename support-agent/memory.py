@@ -116,6 +116,32 @@ def _cache_append(bank_id: str, memory_text: str):
 # Core Memory Operations: remember, recall, get_all_memories
 # ---------------------------------------------------------------------------
 
+# Set of banks verified or created during runtime
+_known_banks = set()
+
+
+def ensure_bank_exists(customer_id: str, name: Optional[str] = None) -> bool:
+    """
+    Ensures bank is provisioned on Hindsight Cloud to prevent 404 Not Found errors.
+    """
+    bank_id = bank_for(customer_id)
+    if bank_id in _known_banks:
+        return True
+
+    client = _get_hindsight_client()
+    if client and hasattr(client, "create_bank"):
+        try:
+            display_name = name or customer_id.replace("-", " ").title()
+            client.create_bank(bank_id=bank_id, name=display_name)
+            _known_banks.add(bank_id)
+            return True
+        except Exception as e:
+            # Bank may already exist
+            _known_banks.add(bank_id)
+            return True
+    return True
+
+
 def remember(customer_id: str, text: str) -> bool:
     """
     RETAIN: Stores a memory (fact, ticket, learning, or sentiment) in the customer's Hindsight bank.
@@ -141,8 +167,7 @@ def remember(customer_id: str, text: str) -> bool:
     client = _get_hindsight_client()
     if client:
         try:
-            # Documented Hindsight retain call:
-            # client.retain(bank_id=bank_id, content=clean_text)
+            ensure_bank_exists(customer_id)
             if hasattr(client, "retain"):
                 client.retain(bank_id=bank_id, content=clean_text)
                 logger.info(f"Retained in Hindsight bank [{bank_id}]: {clean_text[:60]}...")
