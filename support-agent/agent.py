@@ -1,11 +1,11 @@
 """
-agent.py - Core agent loop and learning extractor for Ava Support Agent.
+agent.py - Core agent loop and learning extractor for Helixa Support Agent.
 
 Pipeline:
 1. RECALL relevant customer history from Hindsight (or bypass if memory is toggled off)
 2. Inject retrieved memories into system prompt
 3. GENERATE response via Groq API (openai/gpt-oss-120b with retries and fallbacks)
-4. RETAIN customer message and Ava's response into Hindsight
+4. RETAIN customer message and Helixa's response into Hindsight
 5. Learn durable facts upon ticket resolution (learn_from_resolution)
 """
 
@@ -50,7 +50,7 @@ def get_groq_client() -> Groq:
 
 
 # System prompt configured for friendly, conversational customer support messages
-AVA_SYSTEM_PROMPT = """You are Ava, a senior customer support agent.
+AVA_SYSTEM_PROMPT = """You are Helixa, a senior customer support agent.
 Your objective is to help the customer solve their issue quickly in a friendly, conversational chat message format.
 
 CRITICAL RULES:
@@ -73,7 +73,7 @@ FALLBACK_MODELS = ["qwen/qwen3-32b", "qwen/qwen3.8-27b", "openai/gpt-oss-20b"]
 
 def _clean_message_format(text: str) -> str:
     """
-    Ensures Ava's response is formatted strictly as a friendly customer chat message,
+    Ensures Helixa's response is formatted strictly as a friendly customer chat message,
     converting any raw code fences into clean conversational instructions.
     """
     if not text:
@@ -132,7 +132,7 @@ def reply(
     Agent loop (fixed pipeline):
     1. RECALL: query Hindsight with customer message (skip if memory_enabled is False).
     2. Format prompt with CURRENT CUSTOMER and CUSTOMER MEMORY block.
-    3. GENERATE: call Groq LLM with Ava's system prompt.
+    3. GENERATE: call Groq LLM with Helixa's system prompt.
     4. RETAIN: record customer message and agent reply into Hindsight memory bank.
     5. Return {"answer": str, "memories_used": List[str]}.
     """
@@ -173,7 +173,7 @@ def reply(
         today_str = date.today().isoformat()
         try:
             remember(customer_id, f"FACT: On {today_str}, customer reported: \"{message}\"")
-            remember(customer_id, f"FACT: On {today_str}, Ava recommended: \"{answer[:200]}...\"")
+            remember(customer_id, f"FACT: On {today_str}, Helixa recommended: \"{answer[:200]}...\"")
         except Exception as e:
             logger.warning(f"Retain step encountered exception: {e}")
 
@@ -203,7 +203,7 @@ def learn_from_resolution(customer_id: str, conversation: List[Dict[str, str]]) 
     transcript_lines = []
     for msg in conversation:
         role = msg.get("role", "user")
-        speaker = "Customer" if role == "user" else "Ava"
+        speaker = "Customer" if role == "user" else "Helixa"
         content = msg.get("content", "")
         transcript_lines.append(f"{speaker}: {content}")
     dialogue = "\n".join(transcript_lines)

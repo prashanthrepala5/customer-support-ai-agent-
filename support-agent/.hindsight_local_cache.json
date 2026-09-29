@@ -59,7 +59,15 @@
     "LEARNING: Pattern: Recurrent webhook sync failures and duplicate billing entries indicate a recurring reliability issue tied to secret rotations and idempotency handling, leading to growing frustration.",
     "LEARNING: Fix: Added a Redis‑backed idempotency guard (Ticket #1057) to prevent duplicate webhook processing; failures typically stem from Redis connectivity lapses, recent deployments bypassing the guard, or TTL/flush issues.",
     "LEARNING: Preference/constraints: Customer relies on detailed logs and metrics (CloudWatch Redis metrics, CI/CD deploy logs, Stripe event IDs) for troubleshooting and prefers data‑driven, step‑by‑step diagnostics.",
-    "LEARNING: Sentiment/pattern: Recurrent frustration with webhook sync failures and duplicate billing entries, often resurfacing after secret rotations or deployments, indicating a recurring operational pattern tied to idempotency and Redis stability."
+    "LEARNING: Sentiment/pattern: Recurrent frustration with webhook sync failures and duplicate billing entries, often resurfacing after secret rotations or deployments, indicating a recurring operational pattern tied to idempotency and Redis stability.",
+    "FACT: On 2026-09-29, customer reported: \"Webhook sync failing\"",
+    "FACT: On 2026-09-29, Ava recommended: \"Hey Maya! 👋 I see the webhook sync has started failing again. The last time we tackled a 401 Unauthorized error on ticket #1042 by rotating the secret and confirming the requests were being rejected b...\"",
+    "FACT: On 2026-09-29, customer reported: \"Recall fix for #1042\"",
+    "FACT: On 2026-09-29, Ava recommended: \"Hey Maya,\n\nSure thing—here’s the quick refresher on how we fixed **Ticket #1042** (the 401 Unauthorized errors on the Stripe subscription‑renewal webhook):\n\n1. **Confirm the secret was expired** – pul...\"",
+    "FACT: On 2026-09-29, customer reported: \"Duplicate billing entries\"",
+    "FACT: On 2026-09-29, Ava recommended: \"Hey Maya,\n\nI’m really sorry you’re still seeing those duplicate billing entries – I know how disruptive that can be for you and your members.\n\nSince we added the Redis‑backed idempotency guard (Ticket...\"",
+    "FACT: On 2026-09-29, Helixa recommended: \"Hey Maya! 👋  \n\nI see you’ve been dealing with the webhook sync issue (ticket #1042). We got the 401 Unauthorized error sorted by rotating the secret and confirming the requests were being rejected bef...\"",
+    "FACT: On 2026-09-29, Helixa recommended: \"Hey Maya! 👋  \n\nJust wanted to check in—after we rotated the webhook secret for issue #1042, everything should be back to normal. Are you still seeing any sync failures, or is there anything else I can...\""
   ],
   "customer-alex-rivera-fintech": [
     "FACT: Customer: Maya Chen (Ops Lead, Brightpath Fitness - SaaS Billing Customer). Plan: Growth Tier ($499/mo). Primary Stack: Stripe Webhooks on Node.js/Express (v18, AWS ECS Fargate). Webhook Endpoint: https://api.brightpathfit.com/v1/stripe/webhooks. Database: PostgreSQL on RDS. Communication preference: Email / direct technical summary.",
@@ -86,7 +94,15 @@
     "LEARNING: Operational Pattern: Recurring infrastructure issue indicated by the customer's use of \"again,\" suggesting a chronic or unresolved root cause for connection pool exhaustion.",
     "FACT: On 2026-09-29, Ava recommended: \"Hi Alex, I’m sorry to hear the pool is maxing out again. I know we adjusted the PgBouncer settings back in January (Ticket #1012), so it’s frustrating to see this resurface.\n\nTo help us pinpoint if th...\"",
     "FACT: On 2026-09-29, Ava recommended: \"Hi Alex, I’m sorry to hear the connection pool is maxing out again. I know how critical stability is for you right now, especially with the upcoming campaign.\n\nSince we fixed the PgBouncer settings in...\"",
-    "FACT: On 2026-09-29, Ava recommended: \"Hey Alex 👋,\n\nI see the connection pool is hitting its limit again. The last time we tackled this (Ticket #1012) we bumped the PgBouncer `max_client_conn` setting and switched to transaction‑pooling mo...\""
+    "FACT: On 2026-09-29, Ava recommended: \"Hey Alex 👋,\n\nI see the connection pool is hitting its limit again. The last time we tackled this (Ticket #1012) we bumped the PgBouncer `max_client_conn` setting and switched to transaction‑pooling mo...\"",
+    "FACT: On 2026-09-29, customer reported: \"PgBouncer fix summary\"",
+    "FACT: On 2026-09-29, Ava recommended: \"Hi Alex,\n\nSure thing—here’s a quick recap of the PgBouncer changes we made on 2026‑01‑10 to stop the connection‑pool starvation you were seeing during traffic spikes:\n\n1. **Increased the max client co...\"",
+    "FACT: On 2026-09-29, customer reported: \"Idempotency collision #1089\"",
+    "FACT: On 2026-09-29, Helixa recommended: \"Hey Alex! 👋  \n\nI see you’re referencing the idempotency‑key collision work we did in Ticket #1089 (the SHA‑256 header hashing upgrade). Just to make sure we’re on the same page—are you still seeing co...\"",
+    "FACT: On 2026-09-29, Helixa recommended: \"Hey Alex! 👋 Great to hear from you. How can I help you today? (If it’s something related to the idempotency‑key work we did on Ticket #1089, just let me know the details and we can dive right in.)  \n\n...\"",
+    "FACT: On 2026-09-29, customer reported: \"hii\"",
+    "FACT: On 2026-09-29, Helixa recommended: \"Hey Alex! 👋 Great to hear from you. How can I assist you today? Let me know what you’re working on or any issue you’d like to dive into....\"",
+    "FACT: On 2026-09-29, Helixa recommended: \"Hey Alex! 👋  \n\nI see we tackled the idempotency‑key collisions on Ticket #1089 together by adding the client merchant ID into the SHA‑256 payload salt. If you’re still hitting collisions, it usually m...\""
   ],
   "customer-new-customer-trial": [
     "FACT: On 2026-09-29, customer reported: \"Duplicate billing entries today.\"",
@@ -112,9 +128,28 @@
     "FACT: On 2026-09-29, customer reported: \"pervious problem\"",
     "FACT: On 2026-09-29, Ava recommended: \"Hi Jordan,\n\n**Executive Summary**  \nYour recent SAML 2.0 single‑sign‑on redirect loop (Ticket #994) was traced to an expired X.509 certificate in the Okta identity‑provider configuration. By uploading...\"",
     "FACT: On 2026-09-29, customer reported: \"The Okta SAML SSO redirect is looping again.\"",
-    "FACT: On 2026-09-29, Ava recommended: \"Hi Jordan,\n\n**Executive Summary**  \nThe redirect loop you’re seeing again is typically caused by one of two things:\n\n1. **Expired or mismatched X.509 certificate** – if the certificate in Okta no long...\""
+    "FACT: On 2026-09-29, Ava recommended: \"Hi Jordan,\n\n**Executive Summary**  \nThe redirect loop you’re seeing again is typically caused by one of two things:\n\n1. **Expired or mismatched X.509 certificate** – if the certificate in Okta no long...\"",
+    "FACT: On 2026-09-29, customer reported: \"Okta SAML SSO looping\"",
+    "FACT: On 2026-09-29, Ava recommended: \"Hi Jordan,\n\n**Executive Summary**  \nYou’re seeing the Okta SAML SSO redirect loop again. The most common triggers are:\n\n1. **Expired or mismatched X.509 certificate** – the certificate in Okta no long...\"",
+    "FACT: On 2026-09-29, Ava recommended: \"Hey Jordan! 👋 I see you’re hitting a SAML SSO redirect loop again. The last time (Ticket #994) we resolved it by swapping out the expired X.509 cert and clearing the cached metadata in Okta.\n\nCould yo...\"",
+    "FACT: On 2026-09-29, customer reported: \"Fix for ticket #994\"",
+    "FACT: On 2026-09-29, Ava recommended: \"Hi Jordan,\n\n**Executive Summary**  \nTicket #994 was caused by an expired X.509 certificate in the Okta identity‑provider configuration, which created a SAML 2.0 SSO redirect loop. The issue was resolv...\"",
+    "FACT: On 2026-09-29, Ava recommended: \"Hey Jordan! 👋 I see the Okta SAML SSO redirect loop has popped up again. The last time (Ticket #994) we fixed it by swapping out an expired X.509 certificate and clearing the cached metadata in Okta.\n...\""
   ],
   "customer-dhana": [
-    "FACT: Customer Profile: dhana (sde)."
+    "FACT: Customer Profile: dhana (sde).",
+    "FACT: Customer Profile: dhana (Customer).",
+    "FACT: On 2026-09-29, customer reported: \"I need troubleshooting\"",
+    "FACT: On 2026-09-29, Helixa recommended: \"Hi Dhana! I’m happy to help you troubleshoot. Could you let me know which product or service you’re having trouble with and what you’re seeing (error messages, unexpected behavior, etc.)? Once I have ...\""
+  ],
+  "customer-prashanth": [
+    "FACT: Customer Profile: Prashanth (ai).",
+    "FACT: Background notes: hi",
+    "FACT: On 2026-09-29, customer reported: \"Review my profile\"",
+    "FACT: On 2026-09-29, Ava recommended: \"Hi Prashanth! 👋 I’ve pulled up your profile—here’s what I have on file:\n\n- **Name:** Prashanth  \n- **Account type:** AI (ai)\n\nIf there’s anything specific you’d like to update or check (e.g., contact ...\"",
+    "FACT: On 2026-09-29, customer reported: \"Recall my preferences\"",
+    "FACT: On 2026-09-29, Ava recommended: \"Hi Prashanth! 👋 I’ve got your profile pulled up—your name and account type (AI) are all set. I don’t see any specific preferences saved yet (like notification settings, language, or display options). ...\"",
+    "FACT: On 2026-09-29, customer reported: \"I have problem in system\"",
+    "FACT: On 2026-09-29, Ava recommended: \"Hi Prashanth! 👋 I’m sorry you’re running into trouble with the system. Could you tell me a bit more about what’s happening? For example, are you seeing an error message, having trouble logging in, or ...\""
   ]
 }
