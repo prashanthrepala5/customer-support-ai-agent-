@@ -134,7 +134,10 @@
     "FACT: On 2026-09-29, Ava recommended: \"Hey Jordan! 👋 I see you’re hitting a SAML SSO redirect loop again. The last time (Ticket #994) we resolved it by swapping out the expired X.509 cert and clearing the cached metadata in Okta.\n\nCould yo...\"",
     "FACT: On 2026-09-29, customer reported: \"Fix for ticket #994\"",
     "FACT: On 2026-09-29, Ava recommended: \"Hi Jordan,\n\n**Executive Summary**  \nTicket #994 was caused by an expired X.509 certificate in the Okta identity‑provider configuration, which created a SAML 2.0 SSO redirect loop. The issue was resolv...\"",
-    "FACT: On 2026-09-29, Ava recommended: \"Hey Jordan! 👋 I see the Okta SAML SSO redirect loop has popped up again. The last time (Ticket #994) we fixed it by swapping out an expired X.509 certificate and clearing the cached metadata in Okta.\n...\""
+    "FACT: On 2026-09-29, Ava recommended: \"Hey Jordan! 👋 I see the Okta SAML SSO redirect loop has popped up again. The last time (Ticket #994) we fixed it by swapping out an expired X.509 certificate and clearing the cached metadata in Okta.\n...\"",
+    "FACT: On 2026-09-29, customer reported: \"Executive summary\"",
+    "FACT: On 2026-09-29, Helixa recommended: \"**Executive Summary**  \nWe’ve identified that the recurring SAML SSO redirect loop in NovaCloud is caused by an expired X.509 certificate in your Okta integration. The proven fix—used successfully in ...\"",
+    "FACT: On 2026-09-29, Helixa recommended: \"Hey Jordan! 👋  \n\nJust to recap the fix that cleared the SAML 2.0 redirect loop in ticket #994:  \n\n1. **Upload a fresh X.509 certificate** into your Okta identity‑provider settings (replace the expired...\""
   ],
   "customer-dhana": [
     "FACT: Customer Profile: dhana (sde).",
@@ -151,5 +154,12 @@
     "FACT: On 2026-09-29, Ava recommended: \"Hi Prashanth! 👋 I’ve got your profile pulled up—your name and account type (AI) are all set. I don’t see any specific preferences saved yet (like notification settings, language, or display options). ...\"",
     "FACT: On 2026-09-29, customer reported: \"I have problem in system\"",
     "FACT: On 2026-09-29, Ava recommended: \"Hi Prashanth! 👋 I’m sorry you’re running into trouble with the system. Could you tell me a bit more about what’s happening? For example, are you seeing an error message, having trouble logging in, or ...\""
+  ],
+  "customer-nethi": [
+    "FACT: Customer Profile: nethi (Customer).",
+    "FACT: On 2026-09-29, customer reported: \"hii\"",
+    "FACT: On 2026-09-29, Helixa recommended: \"Hi nethi! 👋 How can I help you today? Let me know what you’re working on or any issue you’re facing, and we’ll get it sorted together....\"",
+    "FACT: On 2026-09-29, customer reported: \"Review my profile\"",
+    "FACT: On 2026-09-29, Helixa recommended: \"Hey nethi! 👋 I’m happy to pull up your profile for you. Would you like a quick summary of the info we have on file (name, email, contact preferences, recent activity), or is there something specific y...\""
   ]
 }

@@ -90,8 +90,8 @@ mem_color = "blue" if is_cloud else "green"
 st.markdown(f"""
 <div class="topbar">
   <div class="topbar-brand">
-    <div class="topbar-logo">⌬</div>
-    <div class="topbar-name">SupportAI Helixa Copilot Cluster</div>
+    <div class="topbar-logo">❖</div>
+    <div class="topbar-name">Helixa</div>
   </div>
   <div class="topbar-status">
     <div class="status-badge"><div class="dot green"></div> Agent Status: ONLINE</div>

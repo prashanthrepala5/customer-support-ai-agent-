@@ -50,8 +50,21 @@ html, body, [data-testid="stAppViewContainer"], .stApp {
     margin: 0 -16px 20px -16px;
     font-size: 0.85rem;
 }
-.topbar-brand { display: flex; align-items: center; gap: 12px; }
-.topbar-name { font-size: 1.1rem; font-weight: 600; color: #FFF; }
+.topbar-brand { display: flex; align-items: center; gap: 14px; cursor: pointer; }
+.topbar-logo {
+    font-size: 1.6rem;
+    color: var(--accent-indigo);
+    text-shadow: 0 0 12px rgba(99, 102, 241, 0.6);
+    display: flex; align-items: center; justify-content: center;
+}
+.topbar-name { 
+    font-size: 1.4rem; 
+    font-weight: 700; 
+    letter-spacing: -0.02em;
+    background: linear-gradient(135deg, #FFF, #A5B4FC);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
 .topbar-status {
     display: flex; align-items: center; gap: 16px;
 }
