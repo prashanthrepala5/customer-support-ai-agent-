@@ -102,7 +102,8 @@
     "FACT: On 2026-09-29, Helixa recommended: \"Hey Alex! 👋 Great to hear from you. How can I help you today? (If it’s something related to the idempotency‑key work we did on Ticket #1089, just let me know the details and we can dive right in.)  \n\n...\"",
     "FACT: On 2026-09-29, customer reported: \"hii\"",
     "FACT: On 2026-09-29, Helixa recommended: \"Hey Alex! 👋 Great to hear from you. How can I assist you today? Let me know what you’re working on or any issue you’d like to dive into....\"",
-    "FACT: On 2026-09-29, Helixa recommended: \"Hey Alex! 👋  \n\nI see we tackled the idempotency‑key collisions on Ticket #1089 together by adding the client merchant ID into the SHA‑256 payload salt. If you’re still hitting collisions, it usually m...\""
+    "FACT: On 2026-09-29, Helixa recommended: \"Hey Alex! 👋  \n\nI see we tackled the idempotency‑key collisions on Ticket #1089 together by adding the client merchant ID into the SHA‑256 payload salt. If you’re still hitting collisions, it usually m...\"",
+    "SENTIMENT: Alex is currently satisfied but extremely cautious about latency spikes. He requires fast response times and zero-downtime solutions for any proposed fixes."
   ],
   "customer-new-customer-trial": [
     "FACT: On 2026-09-29, customer reported: \"Duplicate billing entries today.\"",
@@ -161,5 +162,26 @@
     "FACT: On 2026-09-29, Helixa recommended: \"Hi nethi! 👋 How can I help you today? Let me know what you’re working on or any issue you’re facing, and we’ll get it sorted together....\"",
     "FACT: On 2026-09-29, customer reported: \"Review my profile\"",
     "FACT: On 2026-09-29, Helixa recommended: \"Hey nethi! 👋 I’m happy to pull up your profile for you. Would you like a quick summary of the info we have on file (name, email, contact preferences, recent activity), or is there something specific y...\""
+  ],
+  "customer-dhana-831": [
+    "FACT: On 2026-09-29, customer reported: \"hiiii\"",
+    "FACT: On 2026-09-29, Helixa recommended: \"Hey Dhana! 👋 Great to hear from you. How can I help you today? Let me know what you’re working on or any issue you’re facing, and we’ll get it sorted together. 🌟...\"",
+    "FACT: On 2026-09-29, customer reported: \"I need troubleshooting\"",
+    "FACT: On 2026-09-29, Helixa recommended: \"Hi Dhana! 👋 I’m happy to help you troubleshoot. Could you let me know what you’re having trouble with (e.g., login, app performance, a specific feature, etc.)? Once I know the details, I’ll walk you t...\""
+  ],
+  "customer-kowshi-694": [
+    "FACT: On 2026-09-29, customer reported: \"hii\"",
+    "FACT: On 2026-09-29, Helixa recommended: \"Hi Kowshi! 👋 How can I help you today? Let me know what you’re experiencing and we’ll get it sorted out together. 🌟\n\n(Just reply with the details of the issue you’re facing.)...\"",
+    "FACT: On 2026-09-29, customer reported: \"Review my profile\"",
+    "FACT: On 2026-09-29, Helixa recommended: \"Hi Kowshi! 👋 I’m happy to take a look at your profile for you. Could you let me know what you’d like reviewed or updated? For example, are you checking your personal details, privacy settings, or some...\"",
+    "FACT: On 2026-09-29, customer reported: \"in login page the password is incorrect how to login without password \"",
+    "FACT: On 2026-09-29, Helixa recommended: \"Hi Kowshi,\n\nI’m sorry you’re stuck at the login screen—that can be frustrating! If the password isn’t being accepted, the quickest way to get back in is to reset it:\n\n1. On the login page, click the *...\"",
+    "LEARNING: Fix: Incorrect/forgotten password; resolved by directing the user to the “Forgot password?” link, resetting the password via email, and logging in with the new credentials.",
+    "LEARNING: Customer prefers a quick, direct method to regain access without navigating complex UI, indicating a need for straightforward password‑recovery instructions.",
+    "LEARNING: Recurring pattern: Login issues are frequently resolved through the password‑reset flow; ensuring clear, simple reset steps reduces friction and improves satisfaction.",
+    "FACT: On 2026-09-29, customer reported: \"hi\"",
+    "FACT: On 2026-09-29, Helixa recommended: \"Hey Kowshi! 👋  \n\nI see you’ve been dealing with that tricky login issue recently. How can I help you today—are you still having trouble getting back in, or is there something else you’d like me to tak...\"",
+    "FACT: On 2026-09-29, customer reported: \"no it got fixed\"",
+    "FACT: On 2026-09-29, Helixa recommended: \"Glad to hear it’s working again, Kowshi! 🎉 Is there anything else I can help you with—perhaps that profile review you mentioned, or any other question? Let me know what you’d like to tackle next....\""
   ]
 }
