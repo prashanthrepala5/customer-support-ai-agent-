@@ -58,7 +58,10 @@ CUSTOMER_SEED_MAP = {
         "Fix: Upgraded SHA-256 header hashing to include client merchant ID in payload salt.",
 
         "LEARNING: Alex Rivera prefers architecture diagrams, benchmark metrics, and Go code snippets. "
-        "Appreciates deep technical root-cause explanations over surface-level advice."
+        "Appreciates deep technical root-cause explanations over surface-level advice.",
+        
+        "SENTIMENT: Alex is currently satisfied but extremely cautious about latency spikes. "
+        "He requires fast response times and zero-downtime solutions for any proposed fixes."
     ],
     "jordan-taylor-cloud": [
         "FACT: Customer: Jordan Taylor (Product Lead, NovaCloud - Collaborative Workspace). "

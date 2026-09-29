@@ -1,0 +1,14 @@
+{
+    "dhana": {
+        "password": "dhana123",
+        "customer_id": "dhana-831",
+        "name": "Dhana",
+        "role": "Customer"
+    },
+    "kowshi": {
+        "password": "kowshi123",
+        "customer_id": "kowshi-694",
+        "name": "Kowshi",
+        "role": "Customer"
+    }
+}

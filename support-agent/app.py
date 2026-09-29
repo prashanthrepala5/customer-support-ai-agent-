@@ -1,11 +1,13 @@
 """
 app.py - Streamlit UI for Helixa: Customer Support Agent with Hindsight Memory.
-Includes multi-user persistent chat history (WhatsApp style) and dynamic customer creation.
+Includes login-based per-customer memory isolation.
 """
 
 import streamlit as st
 import time
 import re
+import json
+import os
 
 from agent import reply, learn_from_resolution, PRIMARY_MODEL
 from memory import (
@@ -16,11 +18,16 @@ from memory import (
     ensure_bank_exists,
 )
 from seed_history import seed_customer_history
-from ui.styles import get_global_css
+from ui.styles import (
+    get_global_css,
+    get_login_background_html,
+    get_login_card_header_html,
+    get_login_card_footer_html,
+)
 
 # ─── Page Config ────────────────────────────────────────────────────────────
 st.set_page_config(
-    page_title="Helixa · SupportAI Copilot Cluster",
+    page_title="Helixa · SupportAI Copilot",
     page_icon="🤖",
     layout="wide",
     initial_sidebar_state="expanded",
@@ -50,38 +57,152 @@ def get_avatar_gradient(name: str) -> str:
     return gradients[idx]
 
 # ─── Session State ───────────────────────────────────────────────────────────
-DEFAULT_CUSTOMERS = {
-    "maya-chen-brightpath": ("Maya Chen", "Ops Lead · Brightpath Fitness"),
-    "alex-rivera-fintech":  ("Alex Rivera", "VP Eng · FlowPay"),
-    "jordan-taylor-cloud":  ("Jordan Taylor", "Product Lead · NovaCloud"),
+USERS_FILE = "users.json"
+
+# DEMO ONLY - NOT FOR PRODUCTION
+DEMO_CREDENTIALS = {
+    "maya.chen": {"password": "demo123", "customer_id": "maya-chen-brightpath", "name": "Maya Chen", "role": "Ops Lead · Brightpath Fitness"},
+    "alex.rivera": {"password": "demo123", "customer_id": "alex-rivera-fintech", "name": "Alex Rivera", "role": "VP Eng · FlowPay"}
 }
+
+def load_users():
+    if os.path.exists(USERS_FILE):
+        with open(USERS_FILE, "r") as f:
+            return json.load(f)
+    return {}
+
+def save_users(users_dict):
+    with open(USERS_FILE, "w") as f:
+        json.dump(users_dict, f, indent=4)
 
 def _init(key, val):
     if key not in st.session_state:
         st.session_state[key] = val
 
-_init("customers", dict(DEFAULT_CUSTOMERS))
-_init("customer_id", "maya-chen-brightpath")
+_init("logged_in_username", None)
+_init("customer_id", None)
 _init("user_conversations", {})
 _init("latest_memories_used", [])
 _init("memory_enabled", True)
 _init("seeded_customers", set())
 _init("demo_input", None)
 
-# Initialize conversation arrays for default users if not present
-for cid in st.session_state.customers:
-    if cid not in st.session_state.user_conversations:
-        st.session_state.user_conversations[cid] = []
+_init("auth_mode", "login")
 
 # Seed default customers' background history once
-for default_cid in DEFAULT_CUSTOMERS:
+for cred in DEMO_CREDENTIALS.values():
+    default_cid = cred["customer_id"]
     if default_cid not in st.session_state.seeded_customers:
         seed_customer_history(default_cid)
         st.session_state.seeded_customers.add(default_cid)
 
-# Backwards compatibility alias
-st.session_state.messages = st.session_state.user_conversations.get(st.session_state.customer_id, [])
+# ─── Login Screen ───────────────────────────────────────────────────────────
+if not st.session_state.logged_in_username:
+    # Sync auth_mode from query params if clicked
+    if "auth_mode" in st.query_params:
+        mode_param = st.query_params["auth_mode"]
+        if mode_param in ("login", "signup"):
+            st.session_state.auth_mode = mode_param
 
+    # Render Constellations & Glowing Orbs Background
+    st.markdown(get_login_background_html(), unsafe_allow_html=True)
+
+    if st.session_state.auth_mode == "login":
+        # ── Sign In Form ──
+        with st.form("login_form", border=False):
+            st.markdown(get_login_card_header_html(mode="login"), unsafe_allow_html=True)
+            username_in = st.text_input("Username", placeholder="Username or email", label_visibility="collapsed")
+            password_in = st.text_input("Password", type="password", placeholder="Password", label_visibility="collapsed")
+            submitted = st.form_submit_button("Sign in  →", use_container_width=True)
+            st.markdown(get_login_card_footer_html(mode="login"), unsafe_allow_html=True)
+
+            if submitted:
+                users_db = load_users()
+                valid = False
+                target_cid = None
+
+                if username_in in DEMO_CREDENTIALS and DEMO_CREDENTIALS[username_in]["password"] == password_in:
+                    valid = True
+                    target_cid = DEMO_CREDENTIALS[username_in]["customer_id"]
+                elif username_in in users_db and users_db.get(username_in, {}).get("password") == password_in:
+                    valid = True
+                    target_cid = users_db[username_in]["customer_id"]
+
+                if valid:
+                    st.session_state.logged_in_username = username_in
+                    st.session_state.customer_id = target_cid
+                    if target_cid not in st.session_state.user_conversations:
+                        st.session_state.user_conversations[target_cid] = []
+                    st.query_params.clear()
+                    st.rerun()
+                else:
+                    st.markdown("<div class='login-error'>Invalid username or password</div>", unsafe_allow_html=True)
+
+    else:
+        # ── Sign Up Form ──
+        with st.form("signup_form", border=False):
+            st.markdown(get_login_card_header_html(mode="signup"), unsafe_allow_html=True)
+            new_username = st.text_input("Username", placeholder="Choose a username", label_visibility="collapsed")
+            new_password = st.text_input("Password", type="password", placeholder="Choose a password", label_visibility="collapsed")
+            confirm_password = st.text_input("Confirm", type="password", placeholder="Confirm password", label_visibility="collapsed")
+            signup_submitted = st.form_submit_button("Create Account  →", use_container_width=True)
+            st.markdown(get_login_card_footer_html(mode="signup"), unsafe_allow_html=True)
+
+            if signup_submitted:
+                if not new_username.strip() or not new_password.strip():
+                    st.markdown("<div class='login-error'>Username and password are required</div>", unsafe_allow_html=True)
+                elif new_password != confirm_password:
+                    st.markdown("<div class='login-error'>Passwords do not match</div>", unsafe_allow_html=True)
+                else:
+                    users_db = load_users()
+                    if new_username in DEMO_CREDENTIALS or new_username in users_db:
+                        st.markdown("<div class='login-error'>Username already exists</div>", unsafe_allow_html=True)
+                    else:
+                        clean_name = re.sub(r'[^a-z0-9]+', '-', new_username.lower()).strip('-')
+                        if not clean_name: clean_name = f"user-{int(time.time())}"
+                        new_cid = f"{clean_name}-{int(time.time()) % 1000}"
+
+                        users_db[new_username] = {
+                            "password": new_password,  # DEMO ONLY
+                            "customer_id": new_cid,
+                            "name": new_username.replace(".", " ").title(),
+                            "role": "Customer"
+                        }
+                        save_users(users_db)
+
+                        st.session_state.logged_in_username = new_username
+                        st.session_state.customer_id = new_cid
+                        st.session_state.user_conversations[new_cid] = []
+                        st.session_state.auth_mode = "login"
+                        st.query_params.clear()
+                        st.rerun()
+
+    st.stop()
+
+# ─── App Content (User is logged in) ──────────────────────────────────────────
+
+active_username = st.session_state.logged_in_username
+active_cid = st.session_state.customer_id
+
+if active_username in DEMO_CREDENTIALS:
+    user_info = DEMO_CREDENTIALS[active_username]
+else:
+    users_db = load_users()
+    user_info = users_db.get(active_username, {"name": active_username, "role": "Customer"})
+
+cname = user_info["name"]
+crole = user_info.get("role", "Customer")
+initials = get_initials(cname)
+avatar_bg = get_avatar_gradient(cname)
+
+def logout():
+    st.session_state.logged_in_username = None
+    st.session_state.customer_id = None
+    st.session_state.latest_memories_used = []
+    st.session_state.demo_input = None
+    # Fully clear user conversations to prevent leaks
+    st.session_state.user_conversations = {} 
+    
 # ─── Top Navigation Bar ──────────────────────────────────────────────────────
 is_cloud = is_hindsight_cloud_configured()
 mem_label = "Hindsight Cloud" if is_cloud else "Hindsight Local"
@@ -93,94 +214,39 @@ st.markdown(f"""
     <div class="topbar-logo">❖</div>
     <div class="topbar-name">Helixa</div>
   </div>
-  <div class="topbar-status">
+  <div class="topbar-status" style="flex: 1; display: flex; justify-content: center;">
     <div class="status-badge"><div class="dot green"></div> Agent Status: ONLINE</div>
     <div class="status-badge"><div class="dot {mem_color}"></div> {mem_label}</div>
     <div class="status-badge">⏱️ Latency: 140ms</div>
   </div>
+  <div style="display: flex; align-items: center; justify-content: flex-end; gap: 12px; min-width: 150px;">
+    <div style="color: var(--text-primary); font-weight: 500;">{cname}</div>
+    <div class="customer-avatar" style="background: {avatar_bg}; width: 36px; height: 36px; line-height: 36px; font-size: 1rem; border-radius: 50%; display: inline-block; text-align: center;">{initials}</div>
+  </div>
 </div>
 """, unsafe_allow_html=True)
 
+# Add logout button aligned right, just under topbar
+col_blank, col_logout = st.columns([10, 1])
+with col_logout:
+    if st.button("Log Out", key="logout_btn", use_container_width=True):
+        logout()
+        st.rerun()
+
+st.markdown("<hr style='margin-top: 0px; margin-bottom: 20px; border-color: var(--border-color);'>", unsafe_allow_html=True)
+
 # ════════════════════════════════════════════════════════════════════
-# MAIN CONTENT (Left Navigation, Chat, Memory Profile)
+# MAIN CONTENT
 # ════════════════════════════════════════════════════════════════════
-nav_col, chat_col, profile_col = st.columns([1.2, 2.5, 1.2], gap="large")
+nav_col, chat_col, memory_col = st.columns([1.2, 3.0, 2.0], gap="large")
 
 with nav_col:
     with st.container():
-        st.markdown("### 🗂️ Active Customers")
-        
-        # ── Customer Profiles List ──
-        for cid, (name, role) in list(st.session_state.customers.items()):
-            is_active = st.session_state.customer_id == cid
-            active_cls = "active" if is_active else ""
-            initials = get_initials(name)
-            avatar_bg = get_avatar_gradient(name)
-
-            card_html = (
-                f'<div class="customer-card {active_cls}">'
-                f'<div style="display:flex; gap:10px; align-items:center;">'
-                f'<div class="customer-avatar" style="background: {avatar_bg};">{initials}</div>'
-                f'<div>'
-                f'<div class="customer-name">{name}</div>'
-                f'<div class="customer-role">{role}</div>'
-                f'</div></div></div>'
-            )
-            st.markdown(card_html, unsafe_allow_html=True)
-
-            if st.button(f"Select {name.split()[0]}", key=f"sw_{cid}", use_container_width=True, type="primary" if is_active else "secondary"):
-                if cid != st.session_state.customer_id:
-                    st.session_state.customer_id = cid
-                    st.session_state.latest_memories_used = []
-                    st.rerun()
-        
-        st.markdown("---")
-        
-        # ── Add New User Expander ──
-        with st.expander("➕ Add New Customer", expanded=False):
-            with st.form("new_user_form", clear_on_submit=True):
-                new_name = st.text_input("Customer Name", placeholder="e.g. Liam Davis")
-                new_role = st.text_input("Role & Company", placeholder="e.g. Lead DevOps")
-                new_notes = st.text_area("Initial Context", placeholder="e.g. Prefers bullet points.")
-                if st.form_submit_button("➕ Create", use_container_width=True):
-                    if not new_name.strip():
-                        st.error("Please enter a customer name.")
-                    else:
-                        clean_name = new_name.strip()
-                        clean_role = new_role.strip() or "Customer"
-                        slug = re.sub(r'[^a-z0-9]+', '-', clean_name.lower()).strip('-')
-                        if not slug: slug = f"user-{int(time.time())}"
-                        cid = slug
-                        if cid in st.session_state.customers:
-                            cid = f"{slug}-{int(time.time()) % 1000}"
-
-                        st.session_state.customers[cid] = (clean_name, clean_role)
-                        st.session_state.user_conversations[cid] = []
-                        ensure_bank_exists(cid, clean_name)
-                        remember(cid, f"FACT: Customer Profile: {clean_name} ({clean_role}).")
-                        if new_notes.strip():
-                            remember(cid, f"FACT: Background notes: {new_notes.strip()}")
-
-                        st.session_state.customer_id = cid
-                        st.session_state.latest_memories_used = []
-                        st.toast(f"Added {clean_name}!", icon="🎉")
-                        st.rerun()
-
-        st.markdown("---")
-        
-        # ── Quick Prompts ──
-        active_cid = st.session_state.customer_id
-        active_user_tuple = st.session_state.customers.get(active_cid, (active_cid, "Customer"))
-        cname = active_user_tuple[0]
-        crole = active_user_tuple[1]
-
         st.markdown("### ⚡ Quick Prompts")
         if active_cid == "maya-chen-brightpath":
             quick_prompts = [("🔁", "Webhook sync failing"), ("🎫", "Recall fix for #1042"), ("💳", "Duplicate billing entries")]
         elif active_cid == "alex-rivera-fintech":
             quick_prompts = [("⚡", "Connection pool maxing out"), ("🎫", "Idempotency collision #1089"), ("📊", "PgBouncer fix summary")]
-        elif active_cid == "jordan-taylor-cloud":
-            quick_prompts = [("🔑", "Okta SAML SSO looping"), ("🎫", "Fix for ticket #994"), ("📋", "Executive summary")]
         else:
             quick_prompts = [("👋", f"Review my profile"), ("🧠", "Recall my preferences"), ("🛠️", "I need troubleshooting")]
 
@@ -189,11 +255,7 @@ with nav_col:
                 st.session_state.demo_input = prompt
                 st.rerun()
 
-with profile_col:
-    # ── Customer Profile & Controls ──
-    st.markdown(f"### 👤 {cname}")
-    st.caption(active_user_tuple[1])
-    
+with memory_col:
     st.markdown('<div class="memory-panel">', unsafe_allow_html=True)
     st.markdown('<div class="memory-header">🧠 Hindsight Memory Control</div>', unsafe_allow_html=True)
     
@@ -213,7 +275,7 @@ with profile_col:
     all_memories = get_all_memories(active_cid)
     
     if not all_memories:
-        st.info("No memories stored yet.")
+        st.markdown("<div style='text-align:center; padding: 30px 10px; color: var(--text-secondary); background: rgba(255,255,255,0.02); border-radius: 8px; font-size: 0.9rem;'><em>(no prior history)</em></div>", unsafe_allow_html=True)
     else:
         html_content = '<div class="memory-scroll-container">\n'
         for mem in reversed(all_memories):  # Show newest first
@@ -248,7 +310,6 @@ with profile_col:
         st.session_state.user_conversations[active_cid] = []
         st.session_state.latest_memories_used = []
         st.rerun()
-
 
 with chat_col:
     # ── Chat Area ──
